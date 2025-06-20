@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install Dependencies",
+      "type": "shell",
+      "command": "npm install",
+      "group": "build",
+      "isBackground": false
+    },
+    {
+      "label": "Build Project",
+      "type": "shell",
+      "command": "npm run build",
+      "group": "build",
+      "isBackground": false,
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "Run Development",
+      "type": "shell",
+      "command": "npm run dev",
+      "group": "build",
+      "isBackground": false
+    },
+    {
+      "label": "Run Demo",
+      "type": "shell",
+      "command": "npm run demo",
+      "group": "test",
+      "isBackground": false
+    },
+    {
+      "label": "Clean Build",
+      "type": "shell",
+      "command": "npm run clean",
+      "group": "build",
+      "isBackground": false
+    },
+    {
+      "label": "Watch Build",
+      "type": "shell",
+      "command": "npm run watch",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": ["$tsc-watch"]
+    }
+  ]
+}

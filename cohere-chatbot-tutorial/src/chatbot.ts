@@ -1,32 +1,70 @@
 import { CohereClientV2 } from "cohere-ai";
 
+// A single message in the chat conversation
 export interface ChatMessage {
-  role: "user" | "assistant" | "system";
-  content: string;
-  timestamp?: Date;
+  role: "user" | "assistant" | "system"; // Who sent this message
+  content: string; // The text of the message
+  timestamp?: Date; // When the message was sent
 }
 
+// Settings for how the chatbot should behave
 export interface ChatbotConfig {
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-  preamble?: string;
-  enableStreaming?: boolean;
+  model?: string; // Which AI model to use
+  temperature?: number; // How creative the responses are (0-1)
+  maxTokens?: number; // Maximum length of response
+  preamble?: string; // Instructions for the AI's personality
+  enableStreaming?: boolean; // Show response word by word
 }
 
-export class CohereChatbot {
-  private client: CohereClientV2;
-  private config: ChatbotConfig;
-  private conversationHistory: ChatMessage[] = [];
+// Three preset styles for different use cases
+export type ChatbotPreset = "precise" | "balanced" | "creative";
 
+// Ready-made configurations for common scenarios
+export const CHATBOT_PRESETS: Record<ChatbotPreset, ChatbotConfig> = {
+  // For accurate answers (Q&A, summaries, technical docs)
+  precise: {
+    model: "command-r-plus",
+    temperature: 0.0, // No creativity - same answer every time
+    maxTokens: 500,
+    preamble:
+      "You are a helpful and precise assistant. Provide accurate and factual responses.",
+    enableStreaming: false,
+  },
+  // For normal conversations (default choice)
+  balanced: {
+    model: "command-r-plus",
+    temperature: 0.3, // Some creativity - recommended by Cohere docs
+    maxTokens: 500,
+    preamble: "You are a helpful assistant. Be informative and conversational.",
+    enableStreaming: false,
+  },
+  // For creative tasks (poetry, brainstorming, storytelling)
+  creative: {
+    model: "command-r-plus",
+    temperature: 1.0, // Maximum creativity - different answers each time
+    maxTokens: 500,
+    preamble:
+      "You are a creative and imaginative assistant. Feel free to be expressive and think outside the box.",
+    enableStreaming: false,
+  },
+};
+
+// Main chatbot class - handles conversations with Cohere API
+export class CohereChatbot {
+  private client: CohereClientV2; // Connection to Cohere API
+  private config: ChatbotConfig; // Current settings
+  private conversationHistory: ChatMessage[] = []; // All messages so far
+
+  // Create a new chatbot with custom settings
   constructor(apiKey: string, config: ChatbotConfig = {}) {
+    // Set up connection to Cohere API
     this.client = new CohereClientV2({
       token: apiKey,
     });
 
     this.config = {
       model: "command-r-plus",
-      temperature: 0.7,
+      temperature: 0.3,
       maxTokens: 500,
       enableStreaming: false,
       ...config,
@@ -40,6 +78,22 @@ export class CohereChatbot {
         timestamp: new Date(),
       });
     }
+  }
+
+  public static fromPreset(
+    apiKey: string,
+    preset: ChatbotPreset,
+  ): CohereChatbot {
+    const presetConfig = CHATBOT_PRESETS[preset];
+    return new CohereChatbot(apiKey, presetConfig);
+  }
+
+  public getPresetInfo(): string {
+    const temp = this.config.temperature || 0.3;
+    if (temp === 0.0) return "precise (focused on accuracy)";
+    if (temp <= 0.3) return "balanced (general conversation)";
+    if (temp >= 1.0) return "creative (imaginative responses)";
+    return `custom (temperature: ${temp})`;
   }
 
   public async sendMessage(message: string): Promise<string> {

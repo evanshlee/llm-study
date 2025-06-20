@@ -1,186 +1,244 @@
 # Cohere Chatbot Tutorial
 
-이 프로젝트는 Cohere API를 사용하여 챗봇을 구축하는 튜토리얼입니다.
+**This** project teaches you how to build a chatbot using the Cohere API.
 
-## 🚀 시작하기
+## 🚀 Getting Started
 
-### 1. 의존성 설치
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. 환경 변수 설정
+### 2. Set Up Your API Key
 
-1. `.env.example` 파일을 복사하여 `.env` 파일을 생성합니다:
+1. Copy the example file to create your config:
 
 ```bash
 cp .env.example .env
 ```
 
-2. [Cohere Dashboard](https://dashboard.cohere.com/)에서 API 키를 발급받습니다.
+2. Get your API key from [Cohere Dashboard](https://dashboard.cohere.com/).
 
-3. `.env` 파일에 API 키를 입력합니다:
+3. Add your API key to the `.env` file:
 
 ```
 COHERE_API_KEY=your_actual_api_key_here
 ```
 
-### 3. 프로젝트 빌드
+### 3. Project build
 
 ```bash
 npm run build
 ```
 
-### 4. 챗봇 실행
+### 3. Run the Chatbot and Choose Your Style
 
-**개발 모드로 실행:**
+**For development (recommended):**
 
 ```bash
 npm run dev
 ```
 
-**빌드된 버전 실행:**
+**For production (build first):**
 
 ```bash
+npm run build
 npm start
 ```
 
-## 📚 튜토리얼 내용
+When you start the program, you can choose from 3 chatbot styles:
 
-### 1. 기본 챗봇 구현
+```
+🎯 Choose your chatbot style:
+1. Precise - Best for questions, summaries (temperature: 0.0)
+2. Balanced - Good for normal chat (temperature: 0.3)
+3. Creative - Best for poems, ideas (temperature: 1.0)
 
-- Cohere API 클라이언트 설정
-- 기본 채팅 기능
-- 오류 처리
+Select (1-3) [default: 2]:
+```
 
-### 2. 고급 기능
+#### What Each Style Does
 
-- **Preamble (프리엠블)**: 챗봇의 성격과 역할 정의
-- **Streaming**: 실시간 응답 스트리밍
-- **State Management**: 대화 기록 관리
-- **Temperature 조절**: 응답의 창의성 조절
+1. **Precise** - Temperature: 0.0
 
-### 3. 인터랙티브 명령어
+   - Best for: Q&A, summaries, technical docs
+   - Always gives the same answer
+   - Very accurate and factual
 
-- `quit` 또는 `exit`: 챗봇 종료
-- `clear`: 대화 기록 삭제
-- `history`: 대화 기록 조회
-- `streaming`: 스트리밍 모드 토글
-- `preamble`: 새로운 프리엠블 설정
+2. **Balanced** - Temperature: 0.3
 
-## 🏗️ 프로젝트 구조
+   - Best for: Normal conversations
+   - Cohere's recommended default setting
+   - Mix of accuracy and creativity
+
+3. **Creative** - Temperature: 1.0
+   - Best for: Poetry, brainstorming, storytelling
+   - Different answers each time
+   - Very imaginative responses
+
+## 📚 What You Will Learn
+
+### 1. Basic Chatbot Setup
+
+- How to connect to Cohere API
+- Send messages and get responses
+- Handle errors properly
+
+### 2. Preset System (Based on Cohere Docs)
+
+- **Precise**: For accuracy (temperature: 0.0) - Q&A, summaries
+- **Balanced**: For normal chat (temperature: 0.3) - everyday conversations
+- **Creative**: For imagination (temperature: 1.0) - poetry, brainstorming
+- **Dynamic Settings**: Change configuration while running
+
+### 3. Advanced Features
+
+- **Streaming**: See responses word-by-word as AI writes
+- **Memory**: Keep track of conversation history
+- **Easy Setup**: Choose the right style when you start
+
+### 4. Chat Commands
+
+- `quit` or `exit` = stop the program
+- `clear` = delete chat history
+- `history` = show all messages
+- `streaming` = turn word-by-word mode on/off
+- `info` = show current settings
+
+## 🏗️ Project Structure
 
 ```
 src/
-├── chatbot.ts      # 메인 챗봇 클래스
-├── index.ts        # CLI 인터페이스
-└── examples.ts     # 기능 데모 예제
+├── chatbot.ts      # Main chatbot class
+└── index.ts        # Command line interface
 ```
 
-## 🔧 주요 클래스: `CohereChatbot`
+## 🔧 Main Class: `CohereChatbot`
 
-### 구성 옵션 (`ChatbotConfig`)
+### Configuration Options (`ChatbotConfig`)
 
-- `model`: 사용할 Cohere 모델 (기본값: 'command-r-plus')
-- `temperature`: 응답의 창의성 (0.0-1.0, 기본값: 0.7)
-- `maxTokens`: 최대 토큰 수 (기본값: 500)
-- `preamble`: 시스템 메시지/역할 정의
-- `enableStreaming`: 스트리밍 모드 활성화 여부
+- `model`: Which AI model to use (default: 'command-r-plus')
+- `temperature`: How creative responses are (0.0-1.0, default: 0.3)
+- `maxTokens`: Maximum response length (default: 500)
+- `preamble`: Instructions for AI personality
+- `enableStreaming`: Show response word-by-word
 
-### 주요 메서드
+### Easy Preset Methods
 
-- `sendMessage(message: string)`: 메시지 전송 및 응답 받기
-- `getConversationHistory()`: 대화 기록 조회
-- `clearHistory()`: 대화 기록 삭제
-- `setPreamble(preamble: string)`: 프리엠블 설정
-- `updateConfig(config: Partial<ChatbotConfig>)`: 설정 업데이트
+- `CohereChatbot.fromPreset(apiKey, 'precise')`: For accurate answers
+- `CohereChatbot.fromPreset(apiKey, 'balanced')`: For normal chat
+- `CohereChatbot.fromPreset(apiKey, 'creative')`: For creative writing
 
-## 📝 사용 예제
+### Main Methods
 
-### 기본 사용법
+- `sendMessage(message: string)`: Send message and get response
+- `getConversationHistory()`: See all chat messages
+- `clearHistory()`: Delete chat history
+- `getPresetInfo()`: Check current preset info
+- `updateConfig(config: Partial<ChatbotConfig>)`: Change settings
+
+## 📝 Code Examples
+
+### Using Presets
 
 ```typescript
 import { CohereChatbot } from "./src/chatbot";
 
-const chatbot = new CohereChatbot("your-api-key", {
-  preamble: "You are a helpful assistant.",
-  enableStreaming: false,
-});
+// For accurate answers (Q&A, summaries)
+const preciseBot = CohereChatbot.fromPreset("your-api-key", "precise");
 
-const response = await chatbot.sendMessage("Hello!");
+// For normal conversations
+const balancedBot = CohereChatbot.fromPreset("your-api-key", "balanced");
+
+// For creative tasks (poetry, brainstorming)
+const creativeBot = CohereChatbot.fromPreset("your-api-key", "creative");
+
+const response = await preciseBot.sendMessage("What is machine learning?");
 console.log(response);
 ```
 
-### 스트리밍 모드
+### Custom Settings
 
 ```typescript
-const streamingBot = new CohereChatbot("your-api-key", {
-  enableStreaming: true,
+const customBot = new CohereChatbot("your-api-key", {
+  temperature: 0.5,
+  preamble: "You are a helpful coding assistant.",
+  enableStreaming: false,
 });
-
-// 응답이 실시간으로 출력됩니다
-await streamingBot.sendMessage("Tell me a story");
 ```
 
-## 🔑 API 키 발급
+### Streaming Mode
 
-1. [Cohere Dashboard](https://dashboard.cohere.com/)에 접속
-2. 계정 생성 또는 로그인
-3. API Keys 섹션에서 새 키 생성
-4. 생성된 키를 `.env` 파일에 추가
+```typescript
+const streamingBot = CohereChatbot.fromPreset("your-api-key", "creative");
+streamingBot.updateConfig({ enableStreaming: true });
 
-## 🛠️ 개발 스크립트
+// Response appears word by word as AI writes
+await streamingBot.sendMessage("Write a poem about programming");
+```
 
-- `npm run dev`: 개발 모드로 실행 (ts-node 사용)
-- `npm run build`: TypeScript 컴파일
-- `npm run watch`: 파일 변경 감지하여 자동 컴파일
-- `npm start`: 컴파일된 JavaScript 실행
-- `npm run clean`: 빌드 폴더 삭제
+## 🔑 Getting Your API Key
 
-## 🎯 학습 목표
+1. Go to [Cohere Dashboard](https://dashboard.cohere.com/)
+2. Create account or sign in
+3. Go to API Keys section and create new key
+4. Add your key to the `.env` file
 
-이 튜토리얼을 통해 다음을 학습할 수 있습니다:
+## 🛠️ Development Commands
 
-1. **Cohere API 기본 사용법**
+- `npm run dev`: Run in development mode (uses ts-node)
+- `npm run build`: Compile TypeScript to JavaScript
+- `npm run watch`: Auto-compile when files change
+- `npm start`: Run the compiled JavaScript
+- `npm run clean`: Delete build folder
 
-   - API 클라이언트 설정
-   - 채팅 엔드포인트 활용
+## 🎯 Learning Goals
 
-2. **챗봇 아키텍처 설계**
+This tutorial teaches you:
 
-   - 메시지 히스토리 관리
-   - 상태 관리 패턴
+1. **Cohere API Basics**
 
-3. **고급 기능 구현**
+   - How to set up API client
+   - How to use chat endpoint
+   - How to control output with temperature
 
-   - 실시간 스트리밍
-   - 동적 설정 변경
-   - 오류 처리
+2. **Chatbot Architecture**
 
-4. **TypeScript 모범 사례**
-   - 타입 안전성
-   - 인터페이스 설계
-   - 에러 핸들링
+   - How to manage message history
+   - How to handle state
+   - How to implement preset system
 
-## 🤝 기여하기
+3. **Advanced Features**
 
-이 프로젝트에 기여하고 싶으시다면:
+   - Real-time streaming responses
+   - Dynamic configuration changes
+   - Optimization for different use cases
+
+4. **TypeScript Best Practices**
+   - Type safety (no `any` types)
+   - Interface design
+   - Factory pattern implementation
+   - Error handling
+
+## 🤝 Contributing
+
+If you want to help improve this project:
 
 1. Fork this repository
 2. Create a feature branch
 3. Make your changes
 4. Submit a pull request
 
-## 📄 라이선스
+## 📄 License
 
 MIT License
 
-## 🆘 도움말
+## 🆘 Troubleshooting
 
-문제가 발생하면:
+If you have problems:
 
-1. `.env` 파일에 올바른 API 키가 설정되어 있는지 확인
-2. 인터넷 연결 상태 확인
-3. API 키의 유효성 및 권한 확인
-4. Cohere API 사용량 한도 확인
+1. Check if your API key is correct in `.env` file
+2. Check your internet connection
+3. Make sure your API key is valid and has permissions
+4. Check if you've reached Cohere API usage limits

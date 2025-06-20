@@ -1,9 +1,27 @@
 import * as dotenv from "dotenv";
 import * as readlineSync from "readline-sync";
-import { CohereChatbot } from "./chatbot";
+import { ChatbotPreset, CohereChatbot } from "./chatbot";
 
 // Load environment variables
 dotenv.config();
+
+function selectPreset(): ChatbotPreset {
+  console.log("🎯 Choose your chatbot style:");
+  console.log("1. Precise - Focused on accuracy (temperature: 0.0)");
+  console.log("2. Balanced - General conversation (temperature: 0.3)");
+  console.log("3. Creative - Imaginative responses (temperature: 1.0)");
+
+  const choice = readlineSync.question("\nSelect (1-3) [default: 2]: ") || "2";
+
+  switch (choice) {
+    case "1":
+      return "precise";
+    case "3":
+      return "creative";
+    default:
+      return "balanced";
+  }
+}
 
 async function main(): Promise<void> {
   const apiKey = process.env.COHERE_API_KEY;
@@ -17,22 +35,21 @@ async function main(): Promise<void> {
   }
 
   console.log("🤖 Cohere Chatbot Tutorial");
-  console.log("========================");
-  console.log('Type "quit" or "exit" to end the conversation');
-  console.log('Type "clear" to clear conversation history');
-  console.log('Type "history" to see conversation history');
-  console.log('Type "streaming" to toggle streaming mode');
-  console.log('Type "preamble" to set a new preamble\n');
+  console.log("========================\n");
 
-  // Initialize chatbot with a default preamble
-  const chatbot = new CohereChatbot(apiKey, {
-    preamble:
-      "You are a helpful AI assistant. Be concise but informative in your responses.",
-    enableStreaming: false,
-    temperature: 0.7,
-  });
+  // Let user select preset
+  const selectedPreset = selectPreset();
+  const chatbot = CohereChatbot.fromPreset(apiKey, selectedPreset);
 
-  console.log("✅ Chatbot initialized successfully!\n");
+  console.log(`\n✅ Chatbot initialized with ${selectedPreset} preset`);
+  console.log(`📊 Mode: ${chatbot.getPresetInfo()}\n`);
+
+  console.log("💬 Available commands:");
+  console.log('- "quit" or "exit" to end the conversation');
+  console.log('- "clear" to clear conversation history');
+  console.log('- "history" to see conversation history');
+  console.log('- "streaming" to toggle streaming mode');
+  console.log('- "info" to see current configuration\n');
 
   while (true) {
     const userInput = readlineSync.question("You: ");
@@ -77,10 +94,18 @@ async function main(): Promise<void> {
       continue;
     }
 
-    if (userInput.toLowerCase() === "preamble") {
-      const newPreamble = readlineSync.question("Enter new preamble: ");
-      chatbot.setPreamble(newPreamble);
-      console.log("✅ Preamble updated!\n");
+    if (userInput.toLowerCase() === "info") {
+      const config = chatbot.getConfig();
+      console.log("\n📊 Current Configuration:");
+      console.log("========================");
+      console.log(`Model: ${config.model}`);
+      console.log(`Temperature: ${config.temperature}`);
+      console.log(`Max Tokens: ${config.maxTokens}`);
+      console.log(
+        `Streaming: ${config.enableStreaming ? "enabled" : "disabled"}`,
+      );
+      console.log(`Mode: ${chatbot.getPresetInfo()}`);
+      console.log("========================\n");
       continue;
     }
 
@@ -109,15 +134,18 @@ async function main(): Promise<void> {
 }
 
 // Handle uncaught errors
-process.on("uncaughtException", (error) => {
+process.on("uncaughtException", (error: Error) => {
   console.error("❌ Uncaught Exception:", error);
   process.exit(1);
 });
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
-  process.exit(1);
-});
+process.on(
+  "unhandledRejection",
+  (reason: unknown, promise: Promise<unknown>) => {
+    console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+    process.exit(1);
+  },
+);
 
 // Run the main function
 main().catch((error) => {
