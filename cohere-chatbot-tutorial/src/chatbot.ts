@@ -1,4 +1,5 @@
 import { CohereClientV2 } from "cohere-ai";
+import { applyTemplate, getTemplate } from "./templates";
 
 // A single message in the chat conversation
 export interface ChatMessage {
@@ -14,6 +15,7 @@ export interface ChatbotConfig {
   maxTokens?: number; // Maximum length of response
   preamble?: string; // Instructions for the AI's personality
   enableStreaming?: boolean; // Show response word by word
+  activeTemplate?: string; // Current prompt template name
 }
 
 // Three preset styles for different use cases
@@ -206,6 +208,41 @@ export class CohereChatbot {
       content: preamble,
       timestamp: new Date(),
     });
+  }
+
+  // Set active prompt template
+  public setTemplate(templateName: string): boolean {
+    const template = getTemplate(templateName);
+    if (template) {
+      this.config.activeTemplate = templateName;
+      return true;
+    }
+    return false;
+  }
+
+  // Get current active template
+  public getActiveTemplate(): string | undefined {
+    return this.config.activeTemplate;
+  }
+
+  // Send message using active template
+  public async sendTemplatedMessage(userInput: string): Promise<string> {
+    let finalMessage = userInput;
+
+    // Apply template if one is active
+    if (this.config.activeTemplate) {
+      const template = getTemplate(this.config.activeTemplate);
+      if (template) {
+        finalMessage = applyTemplate(template, userInput);
+      }
+    }
+
+    return await this.sendMessage(finalMessage);
+  }
+
+  // Clear active template (return to normal mode)
+  public clearTemplate(): void {
+    this.config.activeTemplate = undefined;
   }
 
   public getConfig(): ChatbotConfig {

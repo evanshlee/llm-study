@@ -1,9 +1,27 @@
 import * as dotenv from "dotenv";
 import * as readlineSync from "readline-sync";
 import { ChatbotPreset, CohereChatbot } from "./chatbot";
+import { listTemplates, promptTemplates } from "./templates";
 
 // Load environment variables
 dotenv.config();
+
+function selectTemplate(): string | null {
+  console.log("\n🎨 Choose a prompt template (optional):");
+  console.log("0. No template - Direct conversation");
+  promptTemplates.forEach((template, index) => {
+    console.log(`${index + 1}. ${template.name} - ${template.description}`);
+  });
+
+  const choice = readlineSync.question("\nSelect (0-4) [default: 0]: ") || "0";
+  const choiceNum = parseInt(choice);
+
+  if (choiceNum === 0) return null;
+  if (choiceNum >= 1 && choiceNum <= promptTemplates.length) {
+    return promptTemplates[choiceNum - 1].name;
+  }
+  return null;
+}
 
 function selectPreset(): ChatbotPreset {
   console.log("🎯 Choose your chatbot style:");
@@ -41,6 +59,13 @@ async function main(): Promise<void> {
   const selectedPreset = selectPreset();
   const chatbot = CohereChatbot.fromPreset(apiKey, selectedPreset);
 
+  // Let user select template
+  const selectedTemplate = selectTemplate();
+  if (selectedTemplate) {
+    chatbot.setTemplate(selectedTemplate);
+    console.log(`\n🎨 Template "${selectedTemplate}" activated`);
+  }
+
   console.log(`\n✅ Chatbot initialized with ${selectedPreset} preset`);
   console.log(`📊 Mode: ${chatbot.getPresetInfo()}\n`);
 
@@ -49,6 +74,9 @@ async function main(): Promise<void> {
   console.log('- "clear" to clear conversation history');
   console.log('- "history" to see conversation history');
   console.log('- "streaming" to toggle streaming mode');
+  console.log('- "templates" to see available templates');
+  console.log('- "template <name>" to change template');
+  console.log('- "no-template" to disable template');
   console.log('- "info" to see current configuration\n');
 
   while (true) {
@@ -94,6 +122,29 @@ async function main(): Promise<void> {
       continue;
     }
 
+    if (userInput.toLowerCase() === "templates") {
+      listTemplates();
+      continue;
+    }
+
+    if (userInput.toLowerCase().startsWith("template ")) {
+      const templateName = userInput.substring("template ".length).trim();
+      const success = chatbot.setTemplate(templateName);
+      if (success) {
+        console.log(`🎨 Template "${templateName}" activated\n`);
+      } else {
+        console.log(`❌ Template "${templateName}" not found\n`);
+        listTemplates();
+      }
+      continue;
+    }
+
+    if (userInput.toLowerCase() === "no-template") {
+      chatbot.clearTemplate();
+      console.log("🎨 Template disabled - using direct conversation\n");
+      continue;
+    }
+
     if (userInput.toLowerCase() === "info") {
       const config = chatbot.getConfig();
       console.log("\n📊 Current Configuration:");
@@ -105,6 +156,7 @@ async function main(): Promise<void> {
         `Streaming: ${config.enableStreaming ? "enabled" : "disabled"}`,
       );
       console.log(`Mode: ${chatbot.getPresetInfo()}`);
+      console.log(`Active Template: ${config.activeTemplate || "none"}`);
       console.log("========================\n");
       continue;
     }
@@ -115,7 +167,11 @@ async function main(): Promise<void> {
 
     try {
       console.log("🤖 Assistant: ", { end: "" });
-      const response = await chatbot.sendMessage(userInput);
+
+      // Use templated message if template is active, otherwise regular message
+      const response = chatbot.getActiveTemplate()
+        ? await chatbot.sendTemplatedMessage(userInput)
+        : await chatbot.sendMessage(userInput);
 
       // If not streaming, print the response
       if (!chatbot.getConfig().enableStreaming) {

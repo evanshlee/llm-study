@@ -47,7 +47,7 @@ npm run build
 npm start
 ```
 
-When you start the program, you can choose from 3 chatbot styles:
+When you start the program, you can choose from 3 chatbot styles and optional prompt templates:
 
 ```
 🎯 Choose your chatbot style:
@@ -55,7 +55,12 @@ When you start the program, you can choose from 3 chatbot styles:
 2. Balanced - Good for normal chat (temperature: 0.3)
 3. Creative - Best for poems, ideas (temperature: 1.0)
 
-Select (1-3) [default: 2]:
+🎨 Choose a prompt template (optional):
+0. No template - Direct conversation
+1. general - General conversation and questions
+2. code - Programming and coding help
+3. creative - Creative writing and storytelling
+4. qa - Structured question and answer
 ```
 
 #### What Each Style Does
@@ -76,6 +81,50 @@ Select (1-3) [default: 2]:
    - Best for: Poetry, brainstorming, storytelling
    - Different answers each time
    - Very imaginative responses
+
+## 🎨 Prompt Templates
+
+This chatbot includes 4 ready-made prompt templates to help you get better results:
+
+### 1. General Template
+
+- **Purpose**: Normal conversation and questions
+- **Best for**: Everyday chat, general questions
+- **Example**: "What's the weather like?" → Gets helpful, friendly response
+
+### 2. Code Template
+
+- **Purpose**: Programming and coding help
+- **Best for**: Technical questions, debugging, code review
+- **Example**: "How do I sort an array in JavaScript?" → Gets explanation + code example + best practices
+
+### 3. Creative Template
+
+- **Purpose**: Creative writing and storytelling
+- **Best for**: Writing poems, stories, creative ideas
+- **Example**: "Write a story about a robot" → Gets imaginative, engaging story
+
+### 4. Q&A Template
+
+- **Purpose**: Structured question and answer
+- **Best for**: Learning, research, detailed explanations
+- **Example**: "Explain machine learning" → Gets structured answer with details and context
+
+### How Templates Work
+
+Templates improve your results by:
+
+- **Clear Instructions**: Tell the AI exactly what kind of response you want
+- **Better Context**: Add helpful background information to your question
+- **Consistent Quality**: Get similar response styles for similar tasks
+
+### Template Commands
+
+While chatting, you can:
+
+- `templates` = See all available templates
+- `template <name>` = Switch to a specific template (e.g., `template code`)
+- `no-template` = Turn off templates and chat directly
 
 ## 📚 What You Will Learn
 
@@ -104,6 +153,9 @@ Select (1-3) [default: 2]:
 - `clear` = delete chat history
 - `history` = show all messages
 - `streaming` = turn word-by-word mode on/off
+- `templates` = show available prompt templates
+- `template <name>` = switch to a template (e.g., `template code`)
+- `no-template` = disable templates
 - `info` = show current settings
 
 ## 🏗️ Project Structure
@@ -111,6 +163,7 @@ Select (1-3) [default: 2]:
 ```
 src/
 ├── chatbot.ts      # Main chatbot class
+├── templates.ts    # Prompt templates
 └── index.ts        # Command line interface
 ```
 
@@ -121,6 +174,7 @@ src/
 - `model`: Which AI model to use (default: 'command-r-plus')
 - `temperature`: How creative responses are (0.0-1.0, default: 0.3)
 - `maxTokens`: Maximum response length (default: 500)
+- `activeTemplate`: Current prompt template name
 - `preamble`: Instructions for AI personality
 - `enableStreaming`: Show response word-by-word
 
@@ -133,12 +187,36 @@ src/
 ### Main Methods
 
 - `sendMessage(message: string)`: Send message and get response
+- `sendTemplatedMessage(userInput: string)`: Send message using active template
+- `setTemplate(templateName: string)`: Set active prompt template
+- `clearTemplate()`: Disable active template
+- `getActiveTemplate()`: Get current template name
 - `getConversationHistory()`: See all chat messages
 - `clearHistory()`: Delete chat history
 - `getPresetInfo()`: Check current preset info
 - `updateConfig(config: Partial<ChatbotConfig>)`: Change settings
 
 ## 📝 Code Examples
+
+### Using Templates
+
+```typescript
+import { CohereChatbot } from "./src/chatbot";
+
+const bot = CohereChatbot.fromPreset("your-api-key", "balanced");
+
+// Set template for coding help
+bot.setTemplate("code");
+const codeHelp = await bot.sendTemplatedMessage("How do I sort an array?");
+
+// Switch to creative template
+bot.setTemplate("creative");
+const story = await bot.sendTemplatedMessage("Write about a space adventure");
+
+// Disable template for direct chat
+bot.clearTemplate();
+const directResponse = await bot.sendMessage("Hello!");
+```
 
 ### Using Presets
 
