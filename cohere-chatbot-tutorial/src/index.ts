@@ -1,11 +1,48 @@
+/**
+ * @fileoverview Interactive command-line interface for the Cohere Chatbot
+ *
+ * This module provides a complete CLI application for testing and using the
+ * CohereChatbot with various features:
+ * - Preset selection (precise, balanced, creative)
+ * - Template selection for specialized tasks
+ * - Real-time chat interaction with command processing
+ * - Conversation history management
+ * - Streaming mode toggle
+ * - Dynamic configuration changes
+ *
+ * @example Run the application:
+ * ```bash
+ * npm start
+ * # or
+ * npx ts-node src/index.ts
+ * ```
+ */
+
 import * as dotenv from "dotenv";
 import * as readlineSync from "readline-sync";
 import { ChatbotPreset, CohereChatbot } from "./chatbot";
 import { listTemplates, promptTemplates } from "./templates";
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
+/**
+ * Interactive template selection for the chatbot
+ *
+ * Displays available prompt templates and allows the user to choose one
+ * for specialized interaction modes. Templates provide structured prompts
+ * for different use cases like coding help or creative writing.
+ *
+ * @returns The selected template name, or null for direct conversation mode
+ *
+ * @example
+ * ```typescript
+ * const template = selectTemplate();
+ * if (template) {
+ *   console.log(`Selected: ${template}`); // e.g., "code"
+ * }
+ * ```
+ */
 function selectTemplate(): string | null {
   console.log("\n🎨 Choose a prompt template (optional):");
   console.log("0. No template - Direct conversation");
@@ -23,6 +60,10 @@ function selectTemplate(): string | null {
   return null;
 }
 
+/**
+ * Allow user to select a chatbot preset configuration
+ * @returns The selected preset type
+ */
 function selectPreset(): ChatbotPreset {
   console.log("🎯 Choose your chatbot style:");
   console.log("1. Precise - Focused on accuracy (temperature: 0.0)");
@@ -41,6 +82,10 @@ function selectPreset(): ChatbotPreset {
   }
 }
 
+/**
+ * Main application entry point
+ * Handles the interactive chat session
+ */
 async function main(): Promise<void> {
   const apiKey = process.env.COHERE_API_KEY;
 
@@ -189,6 +234,10 @@ async function main(): Promise<void> {
   }
 }
 
+/**
+ * Global error handlers for uncaught exceptions and unhandled rejections
+ */
+
 // Handle uncaught errors
 process.on("uncaughtException", (error: Error) => {
   console.error("❌ Uncaught Exception:", error);
@@ -203,7 +252,9 @@ process.on(
   },
 );
 
-// Run the main function
+/**
+ * Run the main function and handle any errors
+ */
 main().catch((error) => {
   console.error("❌ Application error:", error);
   process.exit(1);
